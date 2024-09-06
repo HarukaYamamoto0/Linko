@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Linko</string>
+    <string name="label_textField_url">You URL here</string>
 </resources>

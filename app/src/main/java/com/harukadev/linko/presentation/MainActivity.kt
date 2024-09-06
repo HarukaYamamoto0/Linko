@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.harukadev.linko.R
 import com.harukadev.linko.ui.theme.LinkoTheme
+import com.harukadev.linko.ui.theme.interFamily
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -57,22 +59,25 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun App(viewModel: MainActivityViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val clipboardManager = LocalClipboardManager.current
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .paint(
+                painter = painterResource(R.drawable.background),
+                contentScale = ContentScale.FillWidth
+            )
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .paint(
-                    painter = painterResource(R.drawable.background),
-                    contentScale = ContentScale.FillWidth
-                )
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -80,21 +85,20 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
 
             Image(
                 painter = painterResource(R.drawable.ic_app),
-                modifier = Modifier
-                    .size(161.dp)
-                    .padding(bottom = 11.dp),
+                modifier = Modifier.size(161.dp),
                 contentDescription = "",
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
             )
 
             Text(
-                text = "Linko",
+                text = stringResource(R.string.app_name),
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                fontFamily = interFamily,
+                fontSize = 36.sp,
                 modifier = Modifier
                     .padding(0.dp)
-                    .padding(bottom = 121.dp),
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight(600),
-                fontSize = 36.sp
+                    .padding(top = 10.dp, bottom = 90.dp),
             )
 
             Row(
@@ -105,7 +109,7 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
                     value = uiState.url,
                     modifier = Modifier.weight(1f),
                     onValueChange = { viewModel.setUrl(it) },
-                    label = { Text("You URL here") },
+                    label = { Text(stringResource(R.string.label_textField_url)) },
                     shape = RoundedCornerShape(10.dp),
                     colors = TextFieldDefaults.colors(
                         cursorColor = MaterialTheme.colorScheme.primary,
@@ -155,8 +159,10 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
             ) {
                 Text(
                     text = "Shorten URL!!",
-                    fontWeight = FontWeight(700),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp,
+                    fontFamily = interFamily
                 )
             }
 
@@ -169,6 +175,8 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
             ) {
                 Text(
                     text = "Show advanced options",
+                    fontFamily = interFamily,
+                    fontWeight = FontWeight.Normal,
                     fontSize = 16.sp
                 )
             }
