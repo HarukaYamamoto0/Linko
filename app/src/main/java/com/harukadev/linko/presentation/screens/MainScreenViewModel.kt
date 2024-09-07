@@ -1,26 +1,28 @@
-package com.harukadev.linko.presentation
+package com.harukadev.linko.presentation.screens
 
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberModalBottomSheetState
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.harukadev.linko.api.Shortener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.serialization.Serializable
 
-data class MainActivityUiState(
+@Serializable
+data class MainUiState(
     var url: String = "",
     var shortenedUrl: String = "",
+    var isLoading: Boolean = false,
     var showBottomSheet: Boolean = false,
     var urlShort: String = "",
     var optionQR: Boolean = false,
     var optionStatistics: Boolean = false
 )
 
-class MainActivityViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(MainActivityUiState())
-    val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
+class MainScreenViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow(MainUiState())
+    val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     fun setUrl(url: String) {
         _uiState.update { currentState ->
@@ -30,15 +32,24 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
-    suspend fun shortenUrl(url: String) {
+    suspend fun shortenUrl(url: String): Boolean {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isLoading = true
+            )
+        }
+
         val shortener = Shortener()
         val shortenedUrl = shortener.shortenUrl(url)
 
         _uiState.update { currentState ->
             currentState.copy(
-                shortenedUrl = shortenedUrl
+                shortenedUrl = shortenedUrl,
+                isLoading = false
             )
         }
+
+        return shortenedUrl.isNotBlank()
     }
 
     fun showBottomSheet() {
