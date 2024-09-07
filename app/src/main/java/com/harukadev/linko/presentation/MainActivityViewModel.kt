@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 data class MainActivityUiState(
     var url: String = "",
     var shortenedUrl: String = "",
+    var showBottomSheet: Boolean = false
 )
 
 class MainActivityViewModel : ViewModel() {
@@ -31,6 +32,14 @@ class MainActivityViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 shortenedUrl = shortenedUrl
+            )
+        }
+    }
+
+    fun showBottomSheet() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                showBottomSheet = true
             )
         }
     }

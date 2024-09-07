@@ -12,21 +12,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -36,13 +44,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.harukadev.linko.R
+import com.harukadev.linko.presentation.bottom_sheet_options.OptionCheckBox
+import com.harukadev.linko.presentation.bottom_sheet_options.OptionTextField
 import com.harukadev.linko.ui.theme.LinkoTheme
 import com.harukadev.linko.ui.theme.interFamily
 import kotlinx.coroutines.launch
@@ -51,6 +63,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             LinkoTheme {
                 App()
@@ -59,12 +72,20 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+fun onDismiss() {
+    TODO("Not yet implemented")
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun App(viewModel: MainActivityViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val scope = rememberCoroutineScope()
     val clipboardManager = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
+
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier
@@ -78,7 +99,8 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -123,29 +145,31 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
                     ),
                     maxLines = 1,
                     singleLine = true,
+                    textStyle = TextStyle(
+                        fontFamily = interFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 13.sp,
+                    )
                 )
 
                 FilledIconButton(
                     onClick = {
-                        val value =
-                            if (uiState.url == "") clipboardManager.getText().toString()
-                            else ""
+                        val value = if (uiState.url == "") clipboardManager.getText().toString()
+                        else ""
 
                         viewModel.setUrl(value)
                     },
                     colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
+                        containerColor = MaterialTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(10.dp),
                 ) {
                     Icon(
-                        painter = if (uiState.url == "")
-                            painterResource(R.drawable.ic_clipboard_text)
+                        painter =
+                        if (uiState.url == "") painterResource(R.drawable.ic_clipboard_text)
                         else painterResource(
                             R.drawable.ic_clear
-                        ),
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.tertiary
+                        ), contentDescription = "", tint = MaterialTheme.colorScheme.background
                     )
                 }
             }
@@ -167,8 +191,13 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
             }
 
             TextButton(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(0.dp)
+                    .padding(bottom = 20.dp),
+                onClick = {
+                    showBottomSheet = true
+                },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
                 ),
@@ -176,9 +205,48 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
                 Text(
                     text = "Show advanced options",
                     fontFamily = interFamily,
-                    fontWeight = FontWeight.Normal,
+                    fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
+            }
+
+            if (showBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
+                            }
+                        }
+                    },
+                    sheetState = sheetState,
+                    containerColor = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        OptionTextField(
+                            title = "Short URL:",
+                            placeholder = "myshortenedurl"
+                        )
+
+                        OptionCheckBox(
+                            text = "Create QR Code",
+                            checked = true,
+                            onCheckedChange = {}
+                        )
+
+                        OptionCheckBox(
+                            text = "Enable statistics",
+                            checked = true,
+                            onCheckedChange = {}
+                        )
+                    }
+                }
             }
         }
     }
