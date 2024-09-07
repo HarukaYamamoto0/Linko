@@ -63,7 +63,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             LinkoTheme {
                 App()
@@ -230,20 +229,22 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
                         OptionTextField(
+                            value = uiState.urlShort,
                             title = "Short URL:",
-                            placeholder = "myshortenedurl"
+                            placeholder = "myshortenedurl",
+                            onValueChange = { viewModel.setUrlShort(it) }
                         )
 
                         OptionCheckBox(
                             text = "Create QR Code",
-                            checked = true,
-                            onCheckedChange = {}
+                            checked = uiState.optionQR,
+                            onCheckedChange = { viewModel.setOptionQR(it) }
                         )
 
                         OptionCheckBox(
                             text = "Enable statistics",
-                            checked = true,
-                            onCheckedChange = {}
+                            checked = uiState.optionStatistics,
+                            onCheckedChange = { viewModel.setOptionStatistics(it) }
                         )
                     }
                 }

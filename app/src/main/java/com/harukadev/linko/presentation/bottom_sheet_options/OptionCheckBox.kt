@@ -1,5 +1,6 @@
 package com.harukadev.linko.presentation.bottom_sheet_options
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,32 +30,34 @@ fun OptionCheckBox(
     checked: Boolean = false,
     onCheckedChange: (Boolean) -> Unit = {}
 ) {
-    val defaultModifier = Modifier.fillMaxWidth()
+    val defaultModifier = Modifier
+        .fillMaxWidth()
+        .clickable(
+            onClick = { onCheckedChange(!checked) }
+        )
 
     Row(
         modifier = defaultModifier.then(modifier),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
             Checkbox(
                 checked = checked,
-                modifier = Modifier
-                    .padding(0.dp)
-                    .padding(0.dp),
                 onCheckedChange = {},
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
                     uncheckedColor = MaterialTheme.colorScheme.primary
                 )
-            )}
-
-            Text(
-                text = text,
-                color = MaterialTheme.colorScheme.primary,
-                fontFamily = interFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
             )
         }
+
+        Text(
+            text = text,
+            color = MaterialTheme.colorScheme.primary,
+            fontFamily = interFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp
+        )
     }
+}

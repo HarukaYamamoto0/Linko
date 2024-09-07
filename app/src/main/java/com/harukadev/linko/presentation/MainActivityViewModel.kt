@@ -10,7 +10,10 @@ import kotlinx.coroutines.flow.update
 data class MainActivityUiState(
     var url: String = "",
     var shortenedUrl: String = "",
-    var showBottomSheet: Boolean = false
+    var showBottomSheet: Boolean = false,
+    var urlShort: String = "",
+    var optionQR: Boolean = false,
+    var optionStatistics: Boolean = false
 )
 
 class MainActivityViewModel : ViewModel() {
@@ -40,6 +43,30 @@ class MainActivityViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 showBottomSheet = true
+            )
+        }
+    }
+
+    fun setUrlShort(urlShort: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                urlShort = urlShort
+            )
+        }
+    }
+
+    fun setOptionQR(boolean: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                optionQR = boolean
+            )
+        }
+    }
+
+    fun setOptionStatistics(boolean: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                optionStatistics = boolean
             )
         }
     }

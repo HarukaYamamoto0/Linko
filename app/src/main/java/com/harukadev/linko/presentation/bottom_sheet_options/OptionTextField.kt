@@ -25,6 +25,7 @@ fun OptionTextField(
     modifierTextField: Modifier = Modifier,
     title: String = "Title",
     label: String = "Label",
+    value: String = "Value",
     placeholder: String = "Placeholder",
     onValueChange: (String) -> Unit = {}
 ) {
@@ -45,7 +46,7 @@ fun OptionTextField(
         val defaultModifierTextField = Modifier.fillMaxWidth()
 
         OutlinedTextField(
-            value = "",
+            value = value,
             modifier = defaultModifierTextField.then(modifierTextField),
             onValueChange = onValueChange,
             placeholder = { Text(placeholder) },
@@ -56,9 +57,10 @@ fun OptionTextField(
                 unfocusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                 unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                unfocusedLabelColor = MaterialTheme.colorScheme.primary,
-                focusedTextColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                unfocusedTextColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                unfocusedLabelColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                focusedLabelColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                focusedTextColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                unfocusedTextColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
             ),
             maxLines = 1,
             singleLine = true,
