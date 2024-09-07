@@ -1,5 +1,7 @@
 package com.harukadev.linko.presentation
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.lifecycle.ViewModel
 import com.harukadev.linko.api.Shortener
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +44,7 @@ class MainActivityViewModel : ViewModel() {
     fun showBottomSheet() {
         _uiState.update { currentState ->
             currentState.copy(
-                showBottomSheet = true
+                showBottomSheet = !_uiState.value.showBottomSheet
             )
         }
     }

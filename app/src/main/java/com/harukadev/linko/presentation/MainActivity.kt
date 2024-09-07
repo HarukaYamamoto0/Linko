@@ -71,20 +71,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-fun onDismiss() {
-    TODO("Not yet implemented")
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun App(viewModel: MainActivityViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val clipboardManager = LocalClipboardManager.current
-    val scope = rememberCoroutineScope()
 
+    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier
@@ -195,7 +190,7 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
                     .padding(0.dp)
                     .padding(bottom = 20.dp),
                 onClick = {
-                    showBottomSheet = true
+                    viewModel.showBottomSheet()
                 },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
@@ -209,12 +204,12 @@ fun App(viewModel: MainActivityViewModel = viewModel()) {
                 )
             }
 
-            if (showBottomSheet) {
+            if (uiState.showBottomSheet) {
                 ModalBottomSheet(
                     onDismissRequest = {
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
-                                showBottomSheet = false
+                                viewModel.showBottomSheet()
                             }
                         }
                     },
