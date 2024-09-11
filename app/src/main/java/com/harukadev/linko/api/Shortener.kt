@@ -1,59 +1,55 @@
 package com.harukadev.linko.api
 
-import com.harukadev.linko.data.ApiResponse
-import com.harukadev.linko.data.ShortenerException
+import com.harukadev.linko.data.ShortenedUrl
+import com.harukadev.linko.utils.Promise
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.headers
+import io.ktor.client.request.headers
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 
 class Shortener {
-    private val ktorClient = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
+    private val ktorClient: HttpClient by lazy {
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(Json {
+                    prettyPrint = true
+                    isLenient = true
+                    ignoreUnknownKeys = true
+                })
+            }
         }
     }
 
-    suspend fun shortenUrl(url: String): String {
+    suspend fun shortenUrl(url: String, surname: String? = null): Promise<ShortenedUrl> {
         return try {
-            val response = callApi(url)
-            processResult(response)
-        } finally {
-            closeKtorClient()
+            val response: ShortenedUrl = ktorClient.post(BASE_URL) {
+                contentType(ContentType.Application.FormUrlEncoded)
+                headers {
+                    append(HttpHeaders.Accept, "application/json")
+                }
+                setBody("url=$url&surname=${surname ?: ""}")
+            }.body()
+
+            Promise.Success(response)
+        } catch (e: Exception) {
+            Promise.Error(e)
         }
     }
 
-
-    private suspend fun callApi(url: String): HttpResponse {
-        val response = ktorClient.get("https://is.gd/create.php?format=json&url=$url")
-        return response
+    fun closeClient() {
+        ktorClient.close()
     }
 
-    private suspend fun processResult(response: HttpResponse): String {
-        val result = Json.decodeFromString<ApiResponse>(response.body<String>())
-
-        return when (result.errorCode) {
-            1 -> "there was a problem with the original long URL provided" + result.errorMessage
-            2 -> "there was a problem with the short URL provided (for custom short URLs)"
-            3 -> "our rate limit was exceeded (you should wait before trying again)"
-            4 -> "any other error (includes potential problems with our service such as a maintenance period)"
-            else -> result.shortUrl!!
-        }
-    }
-
-    private fun closeKtorClient() {
-        runBlocking {
-            ktorClient.close()
-        }
+    companion object {
+        const val BASE_URL = "https://spoo.me/"
+        const val BASE_URL_FOR_STATISTICS = "https://spoo.me/stats/"
     }
 }

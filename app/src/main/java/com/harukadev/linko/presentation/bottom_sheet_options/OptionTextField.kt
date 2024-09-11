@@ -19,7 +19,7 @@ import com.harukadev.linko.ui.theme.interFamily
 
 @Preview(showBackground = true)
 @Composable
-fun OptionTextField(
+fun TextFieldWithTitle(
     modifier: Modifier = Modifier,
     modifierTitle: Modifier = Modifier,
     modifierTextField: Modifier = Modifier,
