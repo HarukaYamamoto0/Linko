@@ -8,9 +8,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.harukadev.linko.presentation.screens.HomeScreen
-import com.harukadev.linko.presentation.screens.ResultScreen
-import kotlinx.serialization.Serializable
+import com.harukadev.linko.presentation.screens.home.HomeRouter
+import com.harukadev.linko.presentation.screens.home.HomeScreen
+import com.harukadev.linko.presentation.screens.result.ResultRouter
+import com.harukadev.linko.presentation.screens.result.ResultScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,15 +23,9 @@ class MainActivity : ComponentActivity() {
                 composable<HomeRouter> { HomeScreen(navController) }
                 composable<ResultRouter> {
                     val args = it.toRoute<ResultRouter>()
-                    ResultScreen(navController, url = args.shortenedUrl)
+                    ResultScreen(navController, args = args)
                 }
             }
         }
     }
 }
-
-@Serializable
-object HomeRouter
-
-@Serializable
-data class ResultRouter(val shortenedUrl: String)
