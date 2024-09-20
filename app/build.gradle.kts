@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.compose.placeholder.material3)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.compose.qr.code)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

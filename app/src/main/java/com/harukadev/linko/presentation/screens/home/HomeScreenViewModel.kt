@@ -10,10 +10,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class HomeScreenUiState(
     var url: String = "",
-    var showBottomSheet: Boolean = false,
+    var bottomSheetIsVisible: Boolean = false,
     var urlShort: String = "",
-    var optionQR: Boolean = false,
-    var optionStatistics: Boolean = false
+    var optionQR: Boolean = true,
+    var optionStatistics: Boolean = true
 )
 
 class HomeScreenViewModel : ViewModel() {
@@ -28,10 +28,10 @@ class HomeScreenViewModel : ViewModel() {
         }
     }
 
-    fun showBottomSheet() {
+    fun toggleBottomSheet() {
         _uiState.update {
             it.copy(
-                showBottomSheet = true
+                bottomSheetIsVisible = !_uiState.value.bottomSheetIsVisible
             )
         }
     }

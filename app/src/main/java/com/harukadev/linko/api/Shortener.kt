@@ -1,5 +1,6 @@
 package com.harukadev.linko.api
 
+import android.util.Log
 import com.harukadev.linko.data.ShortenedUrl
 import com.harukadev.linko.utils.Promise
 import io.ktor.client.HttpClient
@@ -35,9 +36,8 @@ class Shortener {
                 headers {
                     append(HttpHeaders.Accept, "application/json")
                 }
-                setBody("url=$url&surname=${surname ?: ""}")
+                setBody("url=$url" + if (surname != null) "&alias=$surname" else "")
             }.body()
-
             Promise.Success(response)
         } catch (e: Exception) {
             Promise.Error(e)

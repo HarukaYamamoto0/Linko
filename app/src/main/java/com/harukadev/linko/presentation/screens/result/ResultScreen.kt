@@ -1,7 +1,6 @@
 package com.harukadev.linko.presentation.screens.result
 
-import android.util.Log
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,14 +43,16 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.placeholder
 import com.eygraber.compose.placeholder.shimmer
 import com.harukadev.linko.R
+import com.harukadev.linko.presentation.screens.home.HomeRouter
 import com.harukadev.linko.ui.theme.LinkoTheme
 import com.harukadev.linko.ui.theme.interFamily
+import com.lightspark.composeqr.QrCodeView
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ResultRouter(
-    var url: String = "",
-    var urlShort: String = "",
+    var url: String,
+    var urlShort: String? = null,
     var optionQR: Boolean = false,
     var optionStatistics: Boolean = false
 )
@@ -60,15 +61,15 @@ data class ResultRouter(
 fun ResultScreen(
     navController: NavController = rememberNavController(),
     viewModel: ResultScreenViewModel = viewModel(),
-    args: ResultRouter = ResultRouter(url = "https://github.com/eygraber/compose-placeholder")
+    args: ResultRouter
 ) {
     val clipboardManager = LocalClipboardManager.current
 
     LinkoTheme {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(args.url) {
-            viewModel.shorten(args.url)
+        LaunchedEffect(true) {
+            viewModel.shorten(args.url, args.urlShort)
         }
 
         Column(
@@ -76,49 +77,54 @@ fun ResultScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .paint(
-                    painter = painterResource(R.drawable.bg_fragment_with_result),
+                    painter = painterResource(R.drawable.bg_main),
                     contentScale = ContentScale.FillBounds
                 )
                 .padding(horizontal = 12.dp),
-            verticalArrangement = Arrangement.Top,
+            verticalArrangement = if (args.optionQR) Arrangement.Top else Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Log.d("sla", uiState.toString())
-            Image(
-                painter = painterResource(R.drawable.preview_qr_code),
-                contentDescription = "",
-                modifier = Modifier
-                    .padding(top = 40.dp)
-                    .size(250.dp)
-                    .placeholder(
-                        visible = uiState.isLoading,
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(4.dp),
-                        highlight = PlaceholderHighlight.shimmer(
-                            highlightColor = MaterialTheme.colorScheme.tertiary,
-                        ),
-                    )
-                    .padding(0.dp)
-            )
-
-            CopyButton(
-                onClick = {}
-            )
+            if (args.optionQR) {
+                QrCodeView(
+                    data = args.url,
+                    modifier = Modifier
+                        .padding(top = 40.dp)
+                        .size(250.dp)
+                        .background(Color.White)
+                        .placeholder(
+                            visible = uiState.isLoading,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(10.dp),
+                            highlight = PlaceholderHighlight.shimmer(
+                                highlightColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
+                            ),
+                        )
+                        .padding(10.dp)
+                )
+            }
 
             TextFieldWithTitleAndButton(
-                modifier = Modifier.padding(bottom = 20.dp),
+                modifier = Modifier.padding(bottom = 20.dp, top = 80.dp),
                 title = "Shortened URL:",
                 value = uiState.shortenedUrl,
                 isLoading = uiState.isLoading,
                 clipboardManager = clipboardManager,
             )
 
-            TextFieldWithTitleAndButton(
-                title = "Url for statistics:",
-                value = uiState.urlForStatistics,
-                isLoading = uiState.isLoading,
-                clipboardManager = clipboardManager,
-            )
+            if (args.optionStatistics) {
+                TextFieldWithTitleAndButton(
+                    title = "Url for statistics:",
+                    value = uiState.urlForStatistics,
+                    isLoading = uiState.isLoading,
+                    clipboardManager = clipboardManager,
+                )
+            }
+
+            if (uiState.isError) {
+                navController.navigate(
+                    HomeRouter(isError = true, errorMessage = uiState.error?.message.toString())
+                )
+            }
         }
     }
 }
@@ -137,7 +143,7 @@ fun TextFieldWithTitleAndButton(
             fontFamily = interFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.background,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .padding(0.dp)
                 .padding(bottom = 8.dp)
@@ -154,10 +160,10 @@ fun TextFieldWithTitleAndButton(
                     .weight(1f)
                     .placeholder(
                         visible = isLoading,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(4.dp),
                         highlight = PlaceholderHighlight.shimmer(
-                            highlightColor = MaterialTheme.colorScheme.tertiary,
+                            highlightColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
                         ),
                     ),
                 onValueChange = { },
@@ -166,13 +172,13 @@ fun TextFieldWithTitleAndButton(
                     cursorColor = MaterialTheme.colorScheme.primary,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.background.copy(
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(
                         alpha = 0.7f
                     ),
-                    unfocusedLabelColor = MaterialTheme.colorScheme.background,
-                    focusedTextColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
-                    unfocusedTextColor = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
+                    unfocusedLabelColor = MaterialTheme.colorScheme.primary,
+                    focusedTextColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                    unfocusedTextColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                 ),
                 readOnly = true,
                 maxLines = 1,
@@ -196,8 +202,8 @@ private fun CopyButton(onClick: () -> Unit) {
     FilledIconButton(
         onClick = onClick,
         colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.primary
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.background
         ),
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
@@ -211,11 +217,10 @@ private fun CopyButton(onClick: () -> Unit) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 35)
 @Composable
 private fun ResultScreenPreview() {
     ResultScreen(
-        navController = rememberNavController(),
         args = ResultRouter(url = "https://github.com/eygraber/compose-placeholder")
     )
 }

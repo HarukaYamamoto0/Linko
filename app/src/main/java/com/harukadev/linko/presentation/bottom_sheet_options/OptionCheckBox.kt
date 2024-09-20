@@ -22,7 +22,7 @@ import com.harukadev.linko.ui.theme.interFamily
 
 @Preview
 @Composable
-fun OptionCheckBox(
+fun  OptionCheckBox(
     modifier: Modifier = Modifier,
     text: String = "label",
     checked: Boolean = false,

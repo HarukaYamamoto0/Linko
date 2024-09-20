@@ -25,11 +25,11 @@ class ResultScreenViewModel : ViewModel() {
 
     private val shortener = Shortener()
 
-    suspend fun shorten(url: String) {
+    suspend fun shorten(url: String, surname: String? = null) {
         withContext(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
 
-            when (val result = shortener.shortenUrl(url)) {
+            when (val result = shortener.shortenUrl(url, surname)) {
                 is Promise.Success -> {
                     _uiState.update {
                         it.copy(
@@ -57,6 +57,8 @@ class ResultScreenViewModel : ViewModel() {
                     }
                 }
             }
+
+            shortener.closeClient()
 
             _uiState.update { it.copy(isLoading = false) }
         }

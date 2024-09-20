@@ -4,15 +4,21 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -39,9 +45,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -56,14 +65,18 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable
-object HomeRouter
+data class HomeRouter(
+    val isError: Boolean = false,
+    val errorMessage: String? = null
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun HomeScreen(
     navController: NavController = rememberNavController(),
-    viewModel: HomeScreenViewModel = viewModel()
+    args: HomeRouter = HomeRouter(),
+    viewModel: HomeScreenViewModel = viewModel(),
 ) {
     LinkoTheme {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -71,6 +84,7 @@ fun HomeScreen(
 
         val scope = rememberCoroutineScope()
         val sheetState = rememberModalBottomSheetState()
+        var showErrorDialog = args.isError
 
         Scaffold(
             modifier = Modifier
@@ -190,7 +204,7 @@ fun HomeScreen(
                         .padding(0.dp)
                         .padding(bottom = 20.dp),
                     onClick = {
-                        viewModel.showBottomSheet()
+                        viewModel.toggleBottomSheet()
                     },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
@@ -204,12 +218,12 @@ fun HomeScreen(
                     )
                 }
 
-                if (uiState.showBottomSheet) {
+                if (uiState.bottomSheetIsVisible) {
                     ModalBottomSheet(
                         onDismissRequest = {
                             scope.launch { sheetState.hide() }.invokeOnCompletion {
                                 if (!sheetState.isVisible) {
-                                    viewModel.showBottomSheet()
+                                    viewModel.toggleBottomSheet()
                                 }
                             }
                         },
@@ -241,6 +255,71 @@ fun HomeScreen(
                                 checked = uiState.optionStatistics,
                                 onCheckedChange = { viewModel.setOptionStatistics(it) }
                             )
+                        }
+                    }
+                }
+
+                if (showErrorDialog) {
+                    Dialog(
+                        onDismissRequest = { showErrorDialog = false },
+                        properties = DialogProperties(
+                            dismissOnBackPress = true,
+                            dismissOnClickOutside = true
+                        ),
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .wrapContentHeight(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.onBackground
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .wrapContentHeight()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+
+                                Image(
+                                    modifier = Modifier.size(120.dp),
+                                    painter = painterResource(R.drawable.error),
+                                    contentDescription = "error",
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+                                )
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                Text(
+                                    text = "I'm sorry but it seems like " + args.errorMessage,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentSize(Alignment.Center),
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                Button(
+                                    onClick = { showErrorDialog = false },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.textButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.background
+                                    )
+                                ) {
+                                    Text(
+                                        text = "Back",
+                                        color = MaterialTheme.colorScheme.background,
+                                        fontFamily = interFamily,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
                         }
                     }
                 }
