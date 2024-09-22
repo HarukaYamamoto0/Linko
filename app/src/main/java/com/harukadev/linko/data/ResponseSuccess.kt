@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ShortenedUrl(
+data class ResponseSuccess(
     @SerialName("short_url")
     val url: String
 )

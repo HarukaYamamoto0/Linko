@@ -14,7 +14,7 @@ data class ResultScreenUiState(
     val urlForStatistics: String? = null,
     val isLoading: Boolean = true,
     val isError: Boolean = false,
-    val error: Throwable? = null,
+    val error: String? = null
 )
 
 class ResultScreenViewModel : ViewModel() {
@@ -32,6 +32,7 @@ class ResultScreenViewModel : ViewModel() {
             result.onSuccess {
                 _uiState.update {
                     it.copy(
+                        isLoading = false,
                         shortenedUrl = result.getOrNull(),
                         urlForStatistics = shortener.getUrlForStatistics(result.getOrNull() ?: "")
                     )
@@ -39,13 +40,12 @@ class ResultScreenViewModel : ViewModel() {
             }.onFailure {
                 _uiState.update {
                     it.copy(
-                        isError = true, error = result.exceptionOrNull()
+                        isError = true,
+                        error = shortener.getErrorMessage(result.exceptionOrNull()?.message ?: "how strange..., I think this is an easter egg, but the bad kind.")
                     )
                 }
             }
         }
-
-        _uiState.update { it.copy(isLoading = false) }
 
         shortener.closeClient()
     }

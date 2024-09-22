@@ -1,16 +1,25 @@
 package com.harukadev.linko.presentation.screens.result
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -25,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -32,9 +42,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -47,6 +60,9 @@ import com.harukadev.linko.presentation.screens.home.HomeRouter
 import com.harukadev.linko.ui.theme.LinkoTheme
 import com.harukadev.linko.ui.theme.interFamily
 import com.lightspark.composeqr.QrCodeView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -64,14 +80,9 @@ fun ResultScreen(
     args: ResultRouter
 ) {
     val clipboardManager = LocalClipboardManager.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LinkoTheme {
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-        LaunchedEffect(true) {
-            viewModel.shorten(args.url, args.urlShort)
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -84,6 +95,10 @@ fun ResultScreen(
             verticalArrangement = if (args.optionQR) Arrangement.Top else Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            LaunchedEffect(args.url) {
+                viewModel.shorten(args.url, args.urlShort)
+            }
+
             if (args.optionQR) {
                 QrCodeView(
                     data = args.url,
@@ -121,9 +136,67 @@ fun ResultScreen(
             }
 
             if (uiState.isError) {
-                navController.navigate(
-                    HomeRouter(isError = true, errorMessage = uiState.error?.message.toString())
-                )
+                Dialog(
+                    onDismissRequest = {},
+                    properties = DialogProperties(
+                        dismissOnBackPress = true,
+                        dismissOnClickOutside = true
+                    )
+                ) {
+                    Card(
+                        modifier = Modifier.wrapContentHeight(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .wrapContentHeight()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+
+                            Image(
+                                modifier = Modifier.size(120.dp),
+                                painter = painterResource(R.drawable.error),
+                                contentDescription = "error",
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+                            )
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Text(
+                                text = "I'm sorry but it seems like " + uiState.error,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentSize(Alignment.Center),
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Button(
+                                onClick = {
+                                    navController.popBackStack()
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.textButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.background
+                                )
+                            ) {
+                                Text(
+                                    text = "Back",
+                                    color = MaterialTheme.colorScheme.background,
+                                    fontFamily = interFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -221,6 +294,10 @@ private fun CopyButton(onClick: () -> Unit) {
 @Composable
 private fun ResultScreenPreview() {
     ResultScreen(
-        args = ResultRouter(url = "https://github.com/eygraber/compose-placeholder")
+        args = ResultRouter(
+            url = "https://github.com/eygraber/compose-placeholder",
+            optionStatistics = true,
+            optionQR = true
+        )
     )
 }

@@ -65,17 +65,13 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class HomeRouter(
-    val isError: Boolean = false,
-    val errorMessage: String? = null
-)
+data object HomeRouter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun HomeScreen(
     navController: NavController = rememberNavController(),
-    args: HomeRouter = HomeRouter(),
     viewModel: HomeScreenViewModel = viewModel(),
 ) {
     LinkoTheme {
@@ -84,7 +80,6 @@ fun HomeScreen(
 
         val scope = rememberCoroutineScope()
         val sheetState = rememberModalBottomSheetState()
-        var showErrorDialog = args.isError
 
         Scaffold(
             modifier = Modifier
@@ -255,71 +250,6 @@ fun HomeScreen(
                                 checked = uiState.optionStatistics,
                                 onCheckedChange = { viewModel.setOptionStatistics(it) }
                             )
-                        }
-                    }
-                }
-
-                if (showErrorDialog) {
-                    Dialog(
-                        onDismissRequest = { showErrorDialog = false },
-                        properties = DialogProperties(
-                            dismissOnBackPress = true,
-                            dismissOnClickOutside = true
-                        ),
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .wrapContentHeight(),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.onBackground
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .wrapContentHeight()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-
-                                Image(
-                                    modifier = Modifier.size(120.dp),
-                                    painter = painterResource(R.drawable.error),
-                                    contentDescription = "error",
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
-                                )
-
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                Text(
-                                    text = "I'm sorry but it seems like " + args.errorMessage,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentSize(Alignment.Center),
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                Button(
-                                    onClick = { showErrorDialog = false },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.textButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.background
-                                    )
-                                ) {
-                                    Text(
-                                        text = "Back",
-                                        color = MaterialTheme.colorScheme.background,
-                                        fontFamily = interFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
-                                }
-                            }
                         }
                     }
                 }

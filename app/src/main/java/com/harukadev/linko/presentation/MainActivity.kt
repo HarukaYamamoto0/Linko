@@ -19,10 +19,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            NavHost(navController, startDestination = HomeRouter()) {
+            NavHost(navController, startDestination = HomeRouter) {
                 composable<HomeRouter> {
-                    val args = it.toRoute<HomeRouter>()
-                    HomeScreen(navController=navController, args=args)
+                    HomeScreen(navController = navController)
                 }
                 composable<ResultRouter> {
                     val args = it.toRoute<ResultRouter>()
