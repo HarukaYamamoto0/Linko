@@ -24,7 +24,7 @@ This is a study project I developed to explore and learn how to use `ViewModel` 
 - How to update Kotlin to version `2.0`.
 
 ## 📷 Screenshots
-<img src="images/screenshot.png" alt="Main Screen" width="400" style="border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);" />
+<img src="images/screenshot.jpg" alt="Main Screen" width="400" style="border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);" />
 
 ## 🤝 Contribution
 
